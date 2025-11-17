@@ -1,0 +1,46 @@
+{
+  "name": "my-ai-app",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "tsx --watch-path=./src --env-file=.env src/app.ts",
+    "terminal": "tsx --env-file=.env src/index.ts",
+    "agent": "tsx --env-file=.env src/agent.ts",
+    "db:studio": "drizzle-kit studio",
+    "db:seed": "tsx --env-file=.env lib/db/seed.ts",
+    "db:migrate": "tsx lib/db/migrate.ts",
+    "db:push": "drizzle-kit push",
+    "db:generate": "drizzle-kit generate",
+    "ingest": "tsx --env-file=.env lib/ai/ingestion/manual-ingest.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.14.0",
+  "dependencies": {
+    "@ai-sdk/google": "^2.0.32",
+    "@langchain/community": "^1.0.3",
+    "@langchain/core": "^1.0.5",
+    "@langchain/textsplitters": "^1.0.0",
+    "@types/cors": "^2.8.19",
+    "ai": "6.0.0-beta.93",
+    "cors": "^2.8.5",
+    "drizzle-orm": "^0.44.7",
+    "drizzle-zod": "^0.8.3",
+    "express": "^5.1.0",
+    "ollama-ai-provider-v2": "^1.5.2",
+    "pdf-parse": "^1.1.4",
+    "pg": "^8.16.3",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.5",
+    "@types/node": "^24.10.0",
+    "@types/pg": "^8.15.6",
+    "drizzle-kit": "^0.31.6",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3"
+  }
+}

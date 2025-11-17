@@ -1,0 +1,36 @@
+# Ignore all log files
+*.log
+
+# Ignore temporary files
+*.tmp
+*.temp
+*~
+~*
+
+# Ignore build output directories
+/build/
+/dist/
+/target/
+
+# Ignore node_modules directory for JavaScript projects
+node_modules/
+
+# Ignore Python bytecode files
+__pycache__/
+*.pyc
+
+# Ignore environment variables files
+.env
+.env.*
+
+# Ignore operating system specific files
+.DS_Store # macOS
+Thumbs.db # Windows
+
+# Ignore IDE specific files and folders
+.idea/ # IntelliJ IDEA
+.vscode/ # VS Code
+*.iml # IntelliJ IDEA module files
+
+# Ignore specific files
+my_secret_key.txt
