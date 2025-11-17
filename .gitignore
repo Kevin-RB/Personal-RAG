@@ -22,6 +22,8 @@ __pycache__/
 # Ignore environment variables files
 .env
 .env.*
+# But track the example file for documentation
+!.env.example
 
 # Ignore operating system specific files
 .DS_Store # macOS
