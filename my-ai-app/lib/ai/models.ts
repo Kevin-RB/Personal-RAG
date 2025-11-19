@@ -10,16 +10,16 @@ const google = createGoogleGenerativeAI({
 
 // Define a list of models from different providers
 export const modelList = {
-    useOllama: ollama(envModel ?? ''),
-    useGoogle: google('gemini-2.5-flash'),
+  useOllama: ollama(envModel ?? ''),
+  useGoogle: google('gemini-2.5-flash'),
 } as const
 
 // Define a type that represents the structure of modelList
 export type modelListType = keyof typeof modelList;
 // Define a type that represents the keys of modelList
-export type modelListKey = typeof  modelList[modelListType];
+export type modelListKey = typeof modelList[modelListType];
 
 export const embeddingModelList = {
-    useOllama: ollama.textEmbeddingModel(embeddingEnvModel ?? ''),
-    useGoogle: google.textEmbeddingModel(embeddingEnvModel ?? 'gemini-embedding-001'),
+  useOllama: ollama.textEmbeddingModel(embeddingEnvModel ?? 'text-embedding-3-large'),
+  useGoogle: google.textEmbeddingModel('text-embedding-004')
 } as const

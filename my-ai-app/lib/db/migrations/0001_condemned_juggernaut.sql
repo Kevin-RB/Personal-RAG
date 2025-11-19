@@ -1,1 +1,0 @@
-ALTER TABLE "frogs" ADD COLUMN "color" varchar(100) NOT NULL;

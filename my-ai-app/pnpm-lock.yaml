@@ -20,9 +20,6 @@ importers:
       '@langchain/textsplitters':
         specifier: ^1.0.0
         version: 1.0.0(@langchain/core@1.0.5(@opentelemetry/api@1.9.0)(openai@6.9.0(ws@8.18.3)(zod@4.1.12)))
-      '@types/cors':
-        specifier: ^2.8.19
-        version: 2.8.19
       ai:
         specifier: 6.0.0-beta.93
         version: 6.0.0-beta.93(zod@4.1.12)
@@ -51,6 +48,9 @@ importers:
         specifier: ^4.1.12
         version: 4.1.12
     devDependencies:
+      '@types/cors':
+        specifier: ^2.8.19
+        version: 2.8.19
       '@types/express':
         specifier: ^5.0.5
         version: 5.0.5

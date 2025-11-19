@@ -8,20 +8,29 @@ const generateChunks = (input: string): string[] => {
     .filter(i => i !== '');
 };
 
+export const generateEmbeddingsFromChunks = async (
+  contents: string[]
+): Promise<Array<{ embedding: number[], content: string }>> => {
+  return await embeddContent(contents);
+}
 
 export const generateEmbeddings = async (
-    value:string
-): Promise<Array<{embedding:number[], content:string}>> =>{
-    const chunks = generateChunks(value);
-    const {embeddings} = await embedMany({
-        model: embeddingModelList.useOllama,
-        values: chunks,
-    })
+  value: string
+): Promise<Array<{ embedding: number[], content: string }>> => {
+  const chunks = generateChunks(value);
+  return await embeddContent(chunks);
+}
 
-    return embeddings.map((embedding, index) => ({
-        content: chunks[index],
-        embedding: embedding,
-    }));
+const embeddContent = async (chunks: string[]): Promise<Array<{ embedding: number[], content: string }>> => {
+  const { embeddings } = await embedMany({
+    model: embeddingModelList.useOllama,
+    values: chunks,
+  })
+
+  return embeddings.map((embedding, index) => ({
+    content: chunks[index],
+    embedding: embedding,
+  }));
 }
 
 export const generateEmbedding = async (value: string): Promise<number[]> => {

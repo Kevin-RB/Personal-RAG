@@ -5,50 +5,43 @@ import { embedMany } from "ai";
 import { db } from "../../db/db";
 import { insertResourceSchema, resources } from "../../db/schema/resources";
 import { embeddingModelList } from "../models";
+import { generateEmbeddingsFromChunks } from "../embeddings";
 
 export const ManuelIngestingest = async () => {
     try {
-    const loader = new PDFLoader(process.env.MANUAL_INGESTION_PATH || '');
-    const docs = await loader.load()
+        const loader = new PDFLoader(process.env.MANUAL_INGESTION_PATH || '');
+        const docs = await loader.load()
 
-    const splitter = new RecursiveCharacterTextSplitter({ chunkSize: 1000, chunkOverlap: 200 })
-    const document = await splitter.splitDocuments(docs);
-    console.log(document);
+        const splitter = new RecursiveCharacterTextSplitter({ chunkSize: 1000, chunkOverlap: 200 })
+        const document = await splitter.splitDocuments(docs);
+        console.log(JSON.stringify(document, null, 2));
 
-    const contents = document.map(doc => doc.pageContent);
+        const contents = document.map(doc => doc.pageContent);
 
-    const {embeddings} = await embedMany({
-        model: embeddingModelList.useOllama,
-        values: contents,
-    })
+        const dbEmbeddings = await generateEmbeddingsFromChunks(contents);
 
-    const dbEmbeddings = embeddings.map((embedding, index) => ({
-        content: contents[index],
-        embedding: embedding,
-    }));
+        // get file name from path
+        const fileName = docs[0].metadata.source.split('\\').pop();
 
-    // get file name from path
-    const fileName = docs[0].metadata.source.split('\\').pop();
+        const { content } = insertResourceSchema.parse({ content: fileName || 'unknown' });
 
-    const { content } = insertResourceSchema.parse({content: fileName|| 'unknown'});
+        const [resource] = await db
+            .insert(resources)
+            .values({
+                content,
+            })
+            .returning();
 
-    const [resource] = await db
-    .insert(resources)
-    .values({
-        content,
-    })
-    .returning();
-
-    await db.insert(embeddingsTable).values(
-        dbEmbeddings.map(embedding => ({
-            resourceId: resource.id,
-            content: embedding.content,
-            embedding: embedding.embedding,
-        }))
-    )
-} catch (error) {
-    console.error("Error during manual ingestion:", error);
-}
+        await db.insert(embeddingsTable).values(
+            dbEmbeddings.map(embedding => ({
+                resourceId: resource.id,
+                content: embedding.content,
+                embedding: embedding.embedding,
+            }))
+        )
+    } catch (error) {
+        console.error("Error during manual ingestion:", error);
+    }
 }
 // ManuelIngestingest();
 

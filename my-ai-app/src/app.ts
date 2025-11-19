@@ -17,7 +17,7 @@ app.use(express.json({ limit: '5mb' }));
 
 app.post('/api/chat', async (req: Request, res: Response) => {
   try {
-    const {messages}  = req.body as { messages: CustomChatMessage[] };
+    const { messages } = req.body as { messages: CustomChatMessage[] };
 
     const modelMessages = convertToModelMessages(messages);
 
@@ -36,42 +36,43 @@ app.post('/api/chat', async (req: Request, res: Response) => {
         // createResourceTool: createResourceTool,
         getInformationTool: getInformationTool,
         processPDFTool: tool({
-            description: `Process a PDF file provided by the user and extract its content for further use.`,
-            inputSchema: z.object({}),
-            execute: async () => {
-              console.log('processPDFTool executed');
-              const lastMessage = modelMessages[modelMessages.length - 1] 
+          description: `Process a PDF file provided by the user and extract its content for further use.`,
+          inputSchema: z.object({}),
+          execute: async () => {
+            console.log('processPDFTool executed');
+            const lastMessage = modelMessages[modelMessages.length - 1]
 
-              const parsedLastMessage = userModelMessageSchema.safeParse(lastMessage);
-              console.log('Parsed last message:', parsedLastMessage);
+            const parsedLastMessage = userModelMessageSchema.safeParse(lastMessage);
+            console.log('Parsed last message:', parsedLastMessage);
 
-              if (parsedLastMessage.error) {
-                throw new Error('Last message is not from user');
-              }
-              
-              const content = parsedLastMessage.data.content;
-              console.log('Content of last message:', content);
+            if (parsedLastMessage.error) {
+              throw new Error('Last message is not from user');
+            }
 
-              if (!Array.isArray(content)) {
-                throw new Error('Last message content is not an array');
-              }
+            const content = parsedLastMessage.data.content;
+            console.log('Content of last message:', content);
 
-              const filePart = content.find(part => part.type === 'file'  && part.mediaType === 'application/pdf') as FilePart | undefined;
+            if (!Array.isArray(content)) {
+              throw new Error('Last message content is not an array');
+            }
 
-              if (!filePart) {
-                throw new Error('No PDF file found in the last message');
-              }
+            const filePart = content.find(part => part.type === 'file' && part.mediaType === 'application/pdf') as FilePart | undefined;
 
-              console.log('PDF file found:', filePart);
+            if (!filePart) {
+              throw new Error('No PDF file found in the last message');
+            }
 
-              return await processPDF(filePart)
-            },
+            console.log('PDF file found:', filePart);
+
+            return await processPDF(filePart)
+          },
         }),
       },
-      stopWhen: stepCountIs(5),      
-      onStepFinish: async ({toolResults})=>{
-          if(toolResults.length === 0) return
-          console.log(JSON.stringify(toolResults, null, 2))
+      stopWhen: stepCountIs(5),
+      onStepFinish: async (ctx) => {
+        const toolResults = ctx.toolResults
+        if (toolResults.length === 0) return
+        console.log(JSON.stringify(toolResults, null, 2))
       },
     });
 

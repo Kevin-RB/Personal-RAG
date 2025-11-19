@@ -5,29 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1762439083479,
-      "tag": "0000_marvelous_nehzno",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1762439470521,
-      "tag": "0001_condemned_juggernaut",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1762505740251,
-      "tag": "0002_misty_deadpool",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1762515915286,
-      "tag": "0003_slow_wasp",
+      "when": 1763536445385,
+      "tag": "0000_brave_warbound",
       "breakpoints": true
     }
   ]
