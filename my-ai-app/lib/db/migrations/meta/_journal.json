@@ -8,6 +8,13 @@
       "when": 1763536445385,
       "tag": "0000_brave_warbound",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1763549430702,
+      "tag": "0001_bent_rocket_racer",
+      "breakpoints": true
     }
   ]
 }

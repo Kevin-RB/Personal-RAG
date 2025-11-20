@@ -1,8 +1,8 @@
 import { ollama } from "ollama-ai-provider-v2";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 
-const envModel = process.env.MODEL_NAME || '';
-const embeddingEnvModel = process.env.EMBEDDING_MODEL || '';
+const envModel = process.env.MODEL_NAME || 'llama3.1';
+const embeddingEnvModel = process.env.EMBEDDING_MODEL || 'nomic-embed-text';
 
 const google = createGoogleGenerativeAI({
   apiKey: process.env.GOOGLE_API_KEY || '',
@@ -10,7 +10,7 @@ const google = createGoogleGenerativeAI({
 
 // Define a list of models from different providers
 export const modelList = {
-  useOllama: ollama(envModel ?? ''),
+  useOllama: ollama(envModel),
   useGoogle: google('gemini-2.5-flash'),
 } as const
 
@@ -20,6 +20,6 @@ export type modelListType = keyof typeof modelList;
 export type modelListKey = typeof modelList[modelListType];
 
 export const embeddingModelList = {
-  useOllama: ollama.textEmbeddingModel(embeddingEnvModel ?? 'text-embedding-3-large'),
+  useOllama: ollama.textEmbeddingModel(embeddingEnvModel),
   useGoogle: google.textEmbeddingModel('text-embedding-004')
 } as const

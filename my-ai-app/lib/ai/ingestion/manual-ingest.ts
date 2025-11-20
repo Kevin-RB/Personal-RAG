@@ -1,3 +1,3 @@
-import { ManuelIngestingest } from "./ingest";
+import { ManualIngest } from "./ingest";
 
-ManuelIngestingest()
+ManualIngest()

@@ -1,108 +1,65 @@
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf"
 import { embeddings as embeddingsTable } from "../../db/schema/embeddings";
-import { embedMany } from "ai";
 import { db } from "../../db/db";
 import { insertResourceSchema, resources } from "../../db/schema/resources";
-import { embeddingModelList } from "../models";
 import { generateEmbeddingsFromChunks } from "../embeddings";
 
-export const ManuelIngestingest = async () => {
+export const ManualIngest = async () => {
     try {
-        const loader = new PDFLoader(process.env.MANUAL_INGESTION_PATH || '');
+        const loader = new PDFLoader(process.env.MANUAL_INGESTION_PATH || '', {
+            parsedItemSeparator: ""
+        });
+
         const docs = await loader.load()
 
-        const splitter = new RecursiveCharacterTextSplitter({ chunkSize: 1000, chunkOverlap: 200 })
-        const document = await splitter.splitDocuments(docs);
-        console.log(JSON.stringify(document, null, 2));
+        const splitter = new RecursiveCharacterTextSplitter({ chunkSize: 500, chunkOverlap: 100 })
+        const splitDocs = await splitter.splitDocuments(docs);
 
-        const contents = document.map(doc => doc.pageContent);
+        console.log(`📦 Split into ${splitDocs.length} chunks`);
+        console.log(`📄 Sample chunk: ${JSON.stringify(splitDocs[0], null, 2)}`);
+
+        const contents = splitDocs.map(doc => doc.pageContent);
 
         const dbEmbeddings = await generateEmbeddingsFromChunks(contents);
 
-        // get file name from path
-        const fileName = docs[0].metadata.source.split('\\').pop();
+        const enrichedEmbeddings = dbEmbeddings.map((embedding, index) => ({
+            ...embedding,
+            pageNumber: splitDocs[index].metadata?.loc?.pageNumber,
+        }))
 
-        const { content } = insertResourceSchema.parse({ content: fileName || 'unknown' });
+        // Get file name from path
+        const fileName = docs[0].metadata.source.split('\\').pop() ||
+            docs[0].metadata.source.split('/').pop();
+
+        const { content, author, title, subject, keywords } = insertResourceSchema.parse({
+            content: fileName || 'unknown',
+            author: docs[0].metadata?.pdf?.info?.author || null,
+            title: docs[0].metadata?.pdf?.info?.title || null,
+            subject: docs[0].metadata?.pdf?.info?.subject || null,
+            keywords: docs[0].metadata?.pdf?.info?.keywords || null,
+        });
 
         const [resource] = await db
             .insert(resources)
             .values({
                 content,
+                author,
+                title,
+                subject,
+                keywords,
             })
             .returning();
 
         await db.insert(embeddingsTable).values(
-            dbEmbeddings.map(embedding => ({
+            enrichedEmbeddings.map(embedding => ({
                 resourceId: resource.id,
                 content: embedding.content,
                 embedding: embedding.embedding,
+                pageNumber: embedding.pageNumber,
             }))
         )
     } catch (error) {
         console.error("Error during manual ingestion:", error);
     }
 }
-// ManuelIngestingest();
-
-export const ingestFile = async (dataURL: Base64URLString): Promise<void> => {
-    try {
-        // Extract the base64 part from the dataURL
-        const base64Data = dataURL.split(',')[1];
-        if (!base64Data) {
-            throw new Error('Invalid dataURL format');
-        }
-
-        // Decode base64 to Buffer
-        const buffer = Buffer.from(base64Data, 'base64');
-
-        // Create a Blob from the Buffer
-        const blob = new Blob([buffer], { type: 'application/pdf' });
-
-        // Load the PDF using PDFLoader with the Blob
-        const loader = new PDFLoader(blob);
-        const docs = await loader.load();
-
-        if (docs.length === 0) {
-            throw new Error('No documents loaded from PDF');
-        }
-
-        // Split the text
-        const splitter = new RecursiveCharacterTextSplitter({ chunkSize: 1000, chunkOverlap: 200 });
-        const texts = await splitter.splitText(docs[0].pageContent);
-
-        // Generate embeddings
-        const { embeddings } = await embedMany({
-            model: embeddingModelList.useOllama,
-            values: texts,
-        });
-
-        // Prepare embeddings for database insertion
-        const dbEmbeddings = embeddings.map((embedding, index) => ({
-            content: texts[index],
-            embedding,
-        }));
-
-        // Validate and insert resource
-        const { content } = insertResourceSchema.parse({ content: 'uploaded-pdf' }); // Customize content as needed
-
-        const [resource] = await db
-            .insert(resources)
-            .values({ content })
-            .returning();
-
-        // Insert embeddings
-        await db.insert(embeddingsTable).values(
-            dbEmbeddings.map((embedding) => ({
-                resourceId: resource.id,
-                content: embedding.content,
-                embedding: embedding.embedding,
-            }))
-        );
-
-        console.log('Ingestion completed successfully');
-    } catch (error) {
-        console.error('Error during ingestion:', error);
-        throw error; // Re-throw for caller to handle
-    }
-};

@@ -8,7 +8,10 @@ export const resources = pgTable("resources", {
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
   content: text("content").notNull(),
-
+  title: text("title"),
+  author: text("author"),
+  subject: text("subject"),
+  keywords: text("keywords"),
   createdAt: timestamp("created_at")
     .notNull()
     .default(sql`now()`),

@@ -25,6 +25,13 @@ import {
 } from "./components/ai-elements/prompt-input";
 import { Response } from "./components/ai-elements/response";
 import { Shimmer } from "./components/ai-elements/shimmer";
+import {
+  Tool,
+  ToolContent,
+  ToolHeader,
+  ToolInput,
+} from "./components/ai-elements/tool";
+import type { GetInformationToolUIPart } from "./components/tool-calls";
 
 function App() {
   const transportInstance = new DefaultChatTransport({
@@ -59,56 +66,65 @@ function App() {
               title="No messages yet"
             />
           ) : (
-            messages.map((message) => (
-              <Message from={message.role} key={message.id}>
-                <MessageContent
-                  className={`${message.role === "user" ? "bg-blue-500" : "bg-gray-200"}`}
-                >
-                  {message.parts.map((part, i) => {
-                    switch (part.type) {
-                      case "text": // we don't use any reasoning or tool calls in this example
-                        return (
-                          <Response key={`${message.id}-${i}`}>
-                            {part.text}
-                          </Response>
-                        );
-                      case "file":
-                        return (
-                          <iframe
-                            height={600}
-                            key={`${message.id}-pdf-${i}`}
-                            src={part.url}
-                            title={`pdf-${i}`}
-                            width={500}
-                          />
-                        );
-                      case "tool-addResource":
-                        return (
-                          <p className="my-2" key={`${message.id}-${i}`}>
-                            call
-                            {part.state === "output-available" ? "ed" : "ing"}{" "}
-                            tool: {part.type}
-                            <pre className="my-4 rounded-sm bg-zinc-900 p-2">
-                              {JSON.stringify(part.input, null, 2)}
-                            </pre>
-                          </p>
-                        );
-                      default:
-                        return null;
-                    }
-                  })}
-                </MessageContent>
-              </Message>
-            ))
+            messages.map((message) => {
+              const isLastMessage = message.id === messages.at(-1)?.id;
+              return (
+                <Message from={message.role} key={message.id}>
+                  <MessageContent>
+                    {isLastMessage && status === "streaming" ? (
+                      <Shimmer duration={1}>Streaming</Shimmer>
+                    ) : null}
+                    {message.parts.map((part, i) => {
+                      switch (part.type) {
+                        case "text":
+                          return (
+                            <Response key={`${message.id}-${i}`}>
+                              {part.text}
+                            </Response>
+                          );
+                        case "file":
+                          return (
+                            <iframe
+                              height={600}
+                              key={`${message.id}-pdf-${i}`}
+                              src={part.url}
+                              title={`pdf-${i}`}
+                              width={500}
+                            />
+                          );
+                        case "tool-getInformationTool": {
+                          const getInformationToolMessage =
+                            part as GetInformationToolUIPart;
+                          return (
+                            <Tool
+                              defaultOpen={false}
+                              key={`${message.id}-${i}`}
+                            >
+                              <ToolHeader
+                                state={getInformationToolMessage.state}
+                                type="tool-getInformationTool"
+                              />
+                              <ToolContent>
+                                <ToolInput
+                                  input={getInformationToolMessage.input}
+                                />
+                              </ToolContent>
+                            </Tool>
+                          );
+                        }
+                        default:
+                          return null;
+                      }
+                    })}
+                  </MessageContent>
+                </Message>
+              );
+            })
           )}
+          {status === "submitted" && <Shimmer duration={1}>Thinking</Shimmer>}
         </ConversationContent>
         <ConversationScrollButton />
       </Conversation>
-
-      {(status === "submitted" || status === "streaming") && (
-        <div>{status === "submitted" && <Shimmer>Loading...</Shimmer>}</div>
-      )}
-
       <PromptInput globalDrop multiple onSubmit={handleSubmit}>
         <PromptInputAttachments>
           {(attachments) => <PromptInputAttachment data={attachments} />}

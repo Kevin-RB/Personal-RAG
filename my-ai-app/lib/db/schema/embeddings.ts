@@ -1,4 +1,4 @@
-import { index, jsonb, pgTable, text, varchar, vector } from 'drizzle-orm/pg-core';
+import { index, integer, pgTable, text, varchar, vector } from 'drizzle-orm/pg-core';
 import { resources } from './resources';
 
 export const embeddings = pgTable("embeddings", {
@@ -11,7 +11,7 @@ export const embeddings = pgTable("embeddings", {
   ),
   content: text("content").notNull(),
   embedding: vector("embedding", { dimensions: 768 }).notNull(),
-  // metadata: jsonb("metadata").notNull(),
+  pageNumber: integer("page_number").notNull(),
 },
   table => ([
     index("embeddingIndex").using(
