@@ -1,23 +1,23 @@
-import { tool, Tool } from "ai";
-import z from "zod";
-import { generateEmbedding } from "../embeddings";
+import { type Tool, tool } from "ai";
 import { cosineDistance, desc, gt, sql } from "drizzle-orm";
-import { embeddings } from "../../db/schema/embeddings";
+import z from "zod";
 import { db } from "../../db/db";
+import { embeddings } from "../../db/schema/embeddings";
+import { generateEmbedding } from "../embeddings";
 
 export const findRelevantContent = async (userQuery: string) => {
   try {
     const userQueryEmbedded = await generateEmbedding(userQuery);
     const similarity = sql<number>`1 - (${cosineDistance(
       embeddings.embedding,
-      userQueryEmbedded,
+      userQueryEmbedded
     )})`;
 
     const similarGuides = await db
       .select({ name: embeddings.content, similarity })
       .from(embeddings)
       .where(gt(similarity, 0.5))
-      .orderBy(t => desc(t.similarity))
+      .orderBy((t) => desc(t.similarity))
       .limit(10);
     return similarGuides;
   } catch (error) {
@@ -27,9 +27,9 @@ export const findRelevantContent = async (userQuery: string) => {
 };
 
 export const getInformationTool = tool({
-  description: `get information from your knowledge base to answer questions.`,
+  description: "get information from your knowledge base to answer questions.",
   inputSchema: z.object({
-    question: z.string().describe('the users question'),
+    question: z.string().describe("the users question"),
   }),
   execute: async ({ question }) => findRelevantContent(question),
 }) satisfies Tool;

@@ -1,65 +1,70 @@
+import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
-import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf"
-import { embeddings as embeddingsTable } from "../../db/schema/embeddings";
 import { db } from "../../db/db";
+import { embeddings as embeddingsTable } from "../../db/schema/embeddings";
 import { insertResourceSchema, resources } from "../../db/schema/resources";
 import { generateEmbeddingsFromChunks } from "../embeddings";
 
 export const ManualIngest = async () => {
-    try {
-        const loader = new PDFLoader(process.env.MANUAL_INGESTION_PATH || '', {
-            parsedItemSeparator: ""
-        });
+  try {
+    const loader = new PDFLoader(process.env.MANUAL_INGESTION_PATH || "", {
+      parsedItemSeparator: "",
+    });
 
-        const docs = await loader.load()
+    const docs = await loader.load();
 
-        const splitter = new RecursiveCharacterTextSplitter({ chunkSize: 500, chunkOverlap: 100 })
-        const splitDocs = await splitter.splitDocuments(docs);
+    const splitter = new RecursiveCharacterTextSplitter({
+      chunkSize: 500,
+      chunkOverlap: 100,
+    });
+    const splitDocs = await splitter.splitDocuments(docs);
 
-        console.log(`📦 Split into ${splitDocs.length} chunks`);
-        console.log(`📄 Sample chunk: ${JSON.stringify(splitDocs[0], null, 2)}`);
+    console.log(`📦 Split into ${splitDocs.length} chunks`);
+    console.log(`📄 Sample chunk: ${JSON.stringify(splitDocs[0], null, 2)}`);
 
-        const contents = splitDocs.map(doc => doc.pageContent);
+    const contents = splitDocs.map((doc) => doc.pageContent);
 
-        const dbEmbeddings = await generateEmbeddingsFromChunks(contents);
+    const dbEmbeddings = await generateEmbeddingsFromChunks(contents);
 
-        const enrichedEmbeddings = dbEmbeddings.map((embedding, index) => ({
-            ...embedding,
-            pageNumber: splitDocs[index].metadata?.loc?.pageNumber,
-        }))
+    const enrichedEmbeddings = dbEmbeddings.map((embedding, index) => ({
+      ...embedding,
+      pageNumber: splitDocs[index].metadata?.loc?.pageNumber,
+    }));
 
-        // Get file name from path
-        const fileName = docs[0].metadata.source.split('\\').pop() ||
-            docs[0].metadata.source.split('/').pop();
+    // Get file name from path
+    const fileName =
+      docs[0].metadata.source.split("\\").pop() ||
+      docs[0].metadata.source.split("/").pop();
 
-        const { content, author, title, subject, keywords } = insertResourceSchema.parse({
-            content: fileName || 'unknown',
-            author: docs[0].metadata?.pdf?.info?.author || null,
-            title: docs[0].metadata?.pdf?.info?.title || null,
-            subject: docs[0].metadata?.pdf?.info?.subject || null,
-            keywords: docs[0].metadata?.pdf?.info?.keywords || null,
-        });
+    const { content, author, title, subject, keywords } =
+      insertResourceSchema.parse({
+        content: fileName || "unknown",
+        author: docs[0].metadata?.pdf?.info?.author || null,
+        title: docs[0].metadata?.pdf?.info?.title || null,
+        subject: docs[0].metadata?.pdf?.info?.subject || null,
+        keywords: docs[0].metadata?.pdf?.info?.keywords || null,
+      });
 
-        const [resource] = await db
-            .insert(resources)
-            .values({
-                content,
-                author,
-                title,
-                subject,
-                keywords,
-            })
-            .returning();
+    const [resource] = await db
+      .insert(resources)
+      .values({
+        content,
+        author,
+        title,
+        subject,
+        keywords,
+      })
+      .returning();
 
-        await db.insert(embeddingsTable).values(
-            enrichedEmbeddings.map(embedding => ({
-                resourceId: resource.id,
-                content: embedding.content,
-                embedding: embedding.embedding,
-                pageNumber: embedding.pageNumber,
-            }))
-        )
-    } catch (error) {
-        console.error("Error during manual ingestion:", error);
-    }
-}
+    await db.insert(embeddingsTable).values(
+      enrichedEmbeddings.map((embedding) => ({
+        resourceId: resource.id,
+        content: embedding.content,
+        embedding: embedding.embedding,
+        pageNumber: embedding.pageNumber,
+      }))
+    );
+  } catch (error) {
+    console.error("Error during manual ingestion:", error);
+  }
+};

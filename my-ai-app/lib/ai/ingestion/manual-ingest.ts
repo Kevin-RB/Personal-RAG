@@ -1,3 +1,3 @@
 import { ManualIngest } from "./ingest";
 
-ManualIngest()
+ManualIngest();
