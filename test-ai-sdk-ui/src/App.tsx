@@ -51,7 +51,6 @@ function App() {
     }
     sendMessage({
       text: message.text || "Sent with attachments",
-      files: message.files,
     });
   };
 
