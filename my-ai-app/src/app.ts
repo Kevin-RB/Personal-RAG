@@ -24,7 +24,6 @@ app.post("/api/chat", (req: Request, res: Response) => {
     const { messages } = req.body as { messages: CustomChatMessage[] };
 
     const modelMessages = convertToModelMessages(messages);
-
     const result = streamText({
       model: modelList.useOllama,
       system: `
@@ -32,12 +31,10 @@ app.post("/api/chat", (req: Request, res: Response) => {
       
       Use the provided tools to answer user questions as best as you can.
       If you don't know the answer, just say you don't know. Do not make up an answer
-      
-      If the user provides a PDF document file, use the processPDF tool to ingest its content into your knowledge base before answering any questions related to the document.
-      `,
+            `,
       messages: modelMessages,
       tools: {
-        // createResourceTool: createResourceTool,
+        // enhanceQuestion: enhanceQueryTool,
         getInformationTool,
         processPDFTool: tool({
           description:

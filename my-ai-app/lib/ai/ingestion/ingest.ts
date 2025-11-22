@@ -9,6 +9,7 @@ export const ManualIngest = async () => {
   try {
     const loader = new PDFLoader(process.env.MANUAL_INGESTION_PATH || "", {
       parsedItemSeparator: "",
+      splitPages: true,
     });
 
     const docs = await loader.load();
@@ -23,7 +24,6 @@ export const ManualIngest = async () => {
     console.log(`📄 Sample chunk: ${JSON.stringify(splitDocs[0], null, 2)}`);
 
     const contents = splitDocs.map((doc) => doc.pageContent);
-
     const dbEmbeddings = await generateEmbeddingsFromChunks(contents);
 
     const enrichedEmbeddings = dbEmbeddings.map((embedding, index) => ({
@@ -39,10 +39,10 @@ export const ManualIngest = async () => {
     const { content, author, title, subject, keywords } =
       insertResourceSchema.parse({
         content: fileName || "unknown",
-        author: docs[0].metadata?.pdf?.info?.author || null,
-        title: docs[0].metadata?.pdf?.info?.title || null,
-        subject: docs[0].metadata?.pdf?.info?.subject || null,
-        keywords: docs[0].metadata?.pdf?.info?.keywords || null,
+        author: docs[0].metadata?.pdf?.info?.Author || null,
+        title: docs[0].metadata?.pdf?.info?.Title || null,
+        subject: docs[0].metadata?.pdf?.info?.Subject || null,
+        keywords: docs[0].metadata?.pdf?.info?.Keywords || null,
       });
 
     const [resource] = await db

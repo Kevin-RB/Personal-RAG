@@ -1,7 +1,7 @@
 import type { FilePart } from "ai";
 // import { ingestFile } from "../ingestion/ingest";
 
-export const processPDF = async (data: FilePart) => {
+export const processPDF = (data: FilePart) => {
   try {
     if (typeof data.data !== "string") {
       throw new Error("File data is not a valid Base64 string");
