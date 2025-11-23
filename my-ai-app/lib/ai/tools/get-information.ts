@@ -1,3 +1,4 @@
+import { BM25Retriever } from "@langchain/community/retrievers/bm25";
 import { type Tool, tool } from "ai";
 import { cosineDistance, desc, gt, sql } from "drizzle-orm";
 import z from "zod";
@@ -5,14 +6,11 @@ import { db } from "../../db/db";
 import { embeddings } from "../../db/schema/embeddings";
 import { generateEmbedding } from "../embeddings";
 import { generateVariants } from "./enhance-query";
-import { BM25Retriever } from "@langchain/community/retrievers/bm25";
-
 
 export const RAG_handmade = async (userQuery: string) => {
   try {
-
     // generate variants of the user question
-    const { variants } = await generateVariants(userQuery)
+    const { variants } = await generateVariants(userQuery);
 
     const userQueryEmbedded = await generateEmbedding(userQuery);
 
@@ -39,28 +37,32 @@ export const RAG_handmade = async (userQuery: string) => {
         name: embeddings.content,
         resourceId: embeddings.resourceId,
         pageNumber: embeddings.pageNumber,
-        similarity
+        similarity,
       })
       .from(embeddings)
-      .where(gt(similarity, 0.6))
+      .where(gt(similarity, 0.5))
       .orderBy((t) => desc(t.similarity))
       .limit(5);
 
+    // console.log("topMatches");
+    // console.log(topMatches);
+
     if (topMatches.length === 0) {
-      return "No relevant information found"
+      return "No relevant information found";
     }
 
     // Stage 2: Get resource IDs and fetch contextual chunks
-    const resourceIds = [...new Set(topMatches.map(m => m.resourceId))];
+    const resourceIds = [...new Set(topMatches.map((m) => m.resourceId))];
 
     // fetch all chunks for the resource IDs
-    const fullResourceCunks = await db.select({
-      id: embeddings.id,
-      content: embeddings.content,
-      resourceId: embeddings.resourceId,
-      pageNumber: embeddings.pageNumber,
-      similarity
-    })
+    const fullResourceCunks = await db
+      .select({
+        id: embeddings.id,
+        content: embeddings.content,
+        resourceId: embeddings.resourceId,
+        pageNumber: embeddings.pageNumber,
+        similarity,
+      })
       .from(embeddings)
       .where(sql`${embeddings.resourceId} IN ${resourceIds}`);
 
@@ -70,9 +72,12 @@ export const RAG_handmade = async (userQuery: string) => {
       metadata: {
         pageNumber: chunk.pageNumber,
         resourceId: chunk.resourceId,
-        similarity: chunk.similarity
+        similarity: chunk.similarity,
       },
     }));
+
+    // console.log("chunksAsDocuments");
+    // console.log(chunksAsDocuments);
 
     // create a retriever from the chunks
     const retriever = BM25Retriever.fromDocuments(chunksAsDocuments, { k: 4 });
@@ -86,8 +91,13 @@ export const RAG_handmade = async (userQuery: string) => {
       resourceId: result.metadata.resourceId,
     }));
 
+    // console.log("BM25Results");
+    // console.log(BM25Results);
+
     // sort the results by similarity
-    const sortedResults = [...topMatches, ...BM25Results].sort((a, b) => b.similarity - a.similarity);
+    const sortedResults = [...topMatches, ...BM25Results].sort(
+      (a, b) => b.similarity - a.similarity
+    );
     return sortedResults;
   } catch (error) {
     console.error("Tool execution error:", error);

@@ -30,6 +30,7 @@ import {
   ToolContent,
   ToolHeader,
   ToolInput,
+  ToolOutput,
 } from "./components/ai-elements/tool";
 import type { GetInformationToolUIPart } from "./components/tool-calls";
 
@@ -101,11 +102,15 @@ function App() {
                             >
                               <ToolHeader
                                 state={getInformationToolMessage.state}
-                                type="tool-getInformationTool"
+                                type="tool-Retrieval Augmented Generation"
                               />
                               <ToolContent>
                                 <ToolInput
                                   input={getInformationToolMessage.input}
+                                />
+                                <ToolOutput
+                                  output={getInformationToolMessage.output}
+                                  errorText={getInformationToolMessage.errorText}
                                 />
                               </ToolContent>
                             </Tool>
