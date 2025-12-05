@@ -1,15 +1,9 @@
-import { drizzle } from "drizzle-orm/node-postgres";
 import { migrate } from "drizzle-orm/node-postgres/migrator";
+import { db } from "./db";
 
 const runMigrate = async () => {
   console.log("🚀 Starting migration script");
   process.loadEnvFile(".env");
-
-  if (!process.env.DATABASE_URL) {
-    throw new Error("DATABASE_URL is not defined");
-  }
-
-  const db = drizzle(process.env.DATABASE_URL);
 
   console.log("⏳ Running migrations...");
 

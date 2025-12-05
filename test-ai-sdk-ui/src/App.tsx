@@ -32,7 +32,10 @@ import {
   ToolInput,
   ToolOutput,
 } from "./components/ai-elements/tool";
-import type { GetInformationToolUIPart } from "./components/tool-calls";
+import type {
+  GetDateToolUIPart,
+  GetInformationToolUIPart,
+} from "./components/tool-calls";
 
 function App() {
   const transportInstance = new DefaultChatTransport({
@@ -109,8 +112,31 @@ function App() {
                                   input={getInformationToolMessage.input}
                                 />
                                 <ToolOutput
+                                  errorText={
+                                    getInformationToolMessage.errorText
+                                  }
                                   output={getInformationToolMessage.output}
-                                  errorText={getInformationToolMessage.errorText}
+                                />
+                              </ToolContent>
+                            </Tool>
+                          );
+                        }
+                        case "tool-getDateTool": {
+                          const getDateToolMessage = part as GetDateToolUIPart;
+                          return (
+                            <Tool
+                              defaultOpen={false}
+                              key={`${message.id}-${i}`}
+                            >
+                              <ToolHeader
+                                state={getDateToolMessage.state}
+                                type="tool-Sharknado summoning"
+                              />
+                              <ToolContent>
+                                <ToolInput input={getDateToolMessage.input} />
+                                <ToolOutput
+                                  errorText={getDateToolMessage.errorText}
+                                  output={getDateToolMessage.output}
                                 />
                               </ToolContent>
                             </Tool>

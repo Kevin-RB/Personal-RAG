@@ -2,6 +2,7 @@ import { pipeAgentUIStreamToResponse } from "ai";
 import cors from "cors";
 import express, { type Request, type Response } from "express";
 import { RAG_agent } from "../lib/ai/agents/rag-agent";
+import { modelList } from "../lib/ai/models";
 import type { CustomChatMessage } from "../lib/ai/tools/tool-definition";
 
 const app = express();
@@ -18,7 +19,7 @@ app.post("/api/chat", async (req: Request, res: Response) => {
 
     await pipeAgentUIStreamToResponse({
       response: res,
-      agent: RAG_agent,
+      agent: RAG_agent({ model: modelList.useOllama }),
       messages,
     });
   } catch (error) {

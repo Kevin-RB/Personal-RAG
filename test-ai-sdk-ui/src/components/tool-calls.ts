@@ -14,3 +14,12 @@ export type GetInformationToolUIPart = ToolUIPart<{
     output: GetInformationToolOutput;
   };
 }>;
+
+export type GetDateToolUIPart = ToolUIPart<{
+  getDateTool: {
+    input: null;
+    output: {
+      content: string;
+    };
+  };
+}>;
