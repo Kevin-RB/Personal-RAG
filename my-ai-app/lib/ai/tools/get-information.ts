@@ -48,7 +48,7 @@ export const RAG_handmade = async (userQuery: string) => {
     // console.log(topMatches);
 
     if (topMatches.length === 0) {
-      return "No relevant information found";
+      throw new Error("No relevant information found.");
     }
 
     // Stage 2: Get resource IDs and fetch contextual chunks
