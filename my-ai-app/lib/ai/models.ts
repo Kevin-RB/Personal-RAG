@@ -23,3 +23,7 @@ export const embeddingModelList = {
   useOllama: ollama.textEmbeddingModel(embeddingEnvModel),
   useGoogle: google.textEmbeddingModel("text-embedding-004"),
 } as const;
+
+export type embeddingModelListType = keyof typeof embeddingModelList;
+export type embeddingModelListKey =
+  (typeof embeddingModelList)[embeddingModelListType];

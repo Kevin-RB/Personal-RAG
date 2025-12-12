@@ -1,6 +1,6 @@
 import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
-import { db } from "../../db/db";
+import { db, langchainVectorStore } from "../../db/db";
 import { embeddings as embeddingsTable } from "../../db/schema/embeddings";
 import { insertResourceSchema, resources } from "../../db/schema/resources";
 import { generateEmbeddingsFromChunks } from "../embeddings";
@@ -66,5 +66,35 @@ export const ManualIngest = async () => {
     );
   } catch (error) {
     console.error("Error during manual ingestion:", error);
+  }
+};
+
+export const langchainIngestion = async () => {
+  try {
+    const loader = new PDFLoader(process.env.MANUAL_INGESTION_PATH || "", {
+      parsedItemSeparator: "",
+    });
+    const docs = await loader.load();
+
+    const splitter = new RecursiveCharacterTextSplitter({
+      chunkSize: 500,
+      chunkOverlap: 100,
+    });
+
+    const texts = await splitter.splitDocuments(docs);
+
+    // we can use langchain's built-in embedding management
+    // to handle the embeddings and ingestion
+    // and integrate with AI SDK
+    // we can use drizzle for the database connection
+
+    // const vectors = await embedding.embedDocuments(
+    //   texts.map((chunk) => chunk.pageContent)
+    // );
+
+    await langchainVectorStore.addDocuments(texts, {});
+    console.log("✅ Langchain ingestion complete");
+  } catch (error) {
+    console.error("Error during Langchain ingestion:", error);
   }
 };

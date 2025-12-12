@@ -1,6 +1,9 @@
+import { Experimental_Agent as Agent, stepCountIs } from "ai";
 import { evalite } from "evalite";
 import { levenshtein } from "evalite/scorers";
-import { RAG_agent_evalite } from "./evalite-models";
+import { laxSytemPrompt } from "../lib/ai/agents/system-propmts";
+import { getDateTool } from "../lib/ai/tools/get-date";
+import { testingModels } from "./evalite-models";
 
 evalite("Datetime Understanding Eval", {
   data: () => [
@@ -21,9 +24,19 @@ evalite("Datetime Understanding Eval", {
     },
   ],
   task: async (input) => {
-    const response = await RAG_agent_evalite.generate({
+    const agent = new Agent({
+      model: testingModels.ollama,
+      system: laxSytemPrompt,
+      tools: {
+        getDateTool,
+      },
+      stopWhen: stepCountIs(10),
+    });
+
+    const response = await agent.generate({
       prompt: input,
     });
+
     return response.text;
   },
   scorers: [

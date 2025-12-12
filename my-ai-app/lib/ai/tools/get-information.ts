@@ -1,10 +1,11 @@
 import { BM25Retriever } from "@langchain/community/retrievers/bm25";
-import { type Tool, tool } from "ai";
+import { generateObject, type Tool, tool } from "ai";
 import { cosineDistance, desc, gt, sql } from "drizzle-orm";
 import z from "zod";
-import { db } from "../../db/db";
+import { db, langchainVectorStore } from "../../db/db";
 import { embeddings } from "../../db/schema/embeddings";
 import { generateEmbedding } from "../embeddings";
+import { modelList } from "../models";
 import { generateVariants } from "./enhance-query";
 
 export const RAG_handmade = async (userQuery: string) => {
@@ -44,9 +45,6 @@ export const RAG_handmade = async (userQuery: string) => {
       .orderBy((t) => desc(t.similarity))
       .limit(5);
 
-    // console.log("topMatches");
-    // console.log(topMatches);
-
     if (topMatches.length === 0) {
       throw new Error("No relevant information found.");
     }
@@ -76,9 +74,6 @@ export const RAG_handmade = async (userQuery: string) => {
       },
     }));
 
-    // console.log("chunksAsDocuments");
-    // console.log(chunksAsDocuments);
-
     // create a retriever from the chunks
     const retriever = BM25Retriever.fromDocuments(chunksAsDocuments, { k: 4 });
     const results = await retriever.invoke(userQuery);
@@ -91,14 +86,59 @@ export const RAG_handmade = async (userQuery: string) => {
       resourceId: result.metadata.resourceId,
     }));
 
-    // console.log("BM25Results");
-    // console.log(BM25Results);
-
     // sort the results by similarity
     const sortedResults = [...topMatches, ...BM25Results].sort(
       (a, b) => b.similarity - a.similarity
     );
     return sortedResults;
+  } catch (error) {
+    console.error("Tool execution error:", error);
+    return `Error retrieving information: ${error}`;
+  }
+};
+
+const RAG_langchain = async (userQuery: string) => {
+  try {
+    // 1. Basic retriever (your improved version)
+    const baseRetriever = langchainVectorStore.asRetriever({
+      k: 5, // Get more candidates
+      searchType: "similarity",
+    });
+
+    const variations = await generateObject({
+      system:
+        "You are a helpful assistant that generates variations of user queries to improve search results.",
+      model: modelList.useOllama,
+      schema: z.object({
+        variations: z
+          .array(z.string())
+          .describe("variations of the user query"),
+      }),
+      prompt: `Generate 3 different variations of the following question to improve search results:\n\nQuestion: "${userQuery}"\n\nVariations:`,
+    });
+
+    // console.log(
+    //   "Generated variations:",
+    //   JSON.stringify(variations.object.variations, null, 2)
+    // );
+
+    const allDocs = await Promise.allSettled(
+      variations.object.variations.map((variant) =>
+        baseRetriever.invoke(variant)
+      )
+    );
+
+    const docs = allDocs.map((result) => {
+      if (result.status === "fulfilled") {
+        return result.value;
+      }
+      console.error("Error retrieving documents for a variant:", result.reason);
+      return [];
+    });
+
+    // console.log(docs);
+
+    return docs;
   } catch (error) {
     console.error("Tool execution error:", error);
     return `Error retrieving information: ${error}`;
@@ -111,4 +151,12 @@ export const getInformationTool = tool({
     question: z.string().describe("the users question"),
   }),
   execute: async ({ question }) => RAG_handmade(question),
+}) satisfies Tool;
+
+export const getInformationTool_langchain = tool({
+  description: "get information from your knowledge base to answer questions.",
+  inputSchema: z.object({
+    question: z.string().describe("the users question"),
+  }),
+  execute: async ({ question }) => RAG_langchain(question),
 }) satisfies Tool;

@@ -1,16 +1,17 @@
-import { ToolLoopAgent } from "ai";
-import type { testingModels } from "../../../evals/evalite-models";
+import { Experimental_Agent as Agent, type LanguageModel } from "ai";
 import { getDateTool } from "../tools/get-date";
 import { getInformationTool } from "../tools/get-information";
 import { laxSytemPrompt } from "./system-propmts";
 
-export function RAG_agent({ model }: { model: testingModels }) {
-  return new ToolLoopAgent({
+export function RAG_agent({ model }: { model: LanguageModel }) {
+  const agent = new Agent({
     model,
-    instructions: laxSytemPrompt,
     tools: {
       getInformationTool,
       getDateTool,
     },
+    system: laxSytemPrompt,
   });
+
+  return agent;
 }

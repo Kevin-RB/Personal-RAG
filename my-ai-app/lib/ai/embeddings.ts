@@ -1,3 +1,4 @@
+import { OllamaEmbeddings } from "@langchain/ollama";
 import { embed, embedMany } from "ai";
 import { embeddingModelList } from "./models";
 
@@ -41,3 +42,11 @@ export const generateEmbedding = async (value: string): Promise<number[]> => {
   });
   return embedding;
 };
+
+export const embedding_langchain = new OllamaEmbeddings({
+  model: process.env.EMBEDDING_MODEL,
+  baseUrl: "http://localhost:11434",
+  onFailedAttempt: (error) => {
+    console.error("Embedding generation failed:", error);
+  },
+});
