@@ -36,3 +36,4 @@ Thumbs.db # Windows
 
 # Ignore specific files
 my_secret_key.txt
+.devtools

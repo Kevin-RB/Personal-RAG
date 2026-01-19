@@ -1,4 +1,4 @@
-import { langchainIngestion } from "./ingest";
+import { ManualIngest } from "./ingest";
 
-// ManualIngest();
-langchainIngestion();
+ManualIngest();
+// langchainIngestion();

@@ -92,7 +92,9 @@ export const langchainIngestion = async () => {
     //   texts.map((chunk) => chunk.pageContent)
     // );
 
-    await langchainVectorStore.addDocuments(texts, {});
+    const store = await langchainVectorStore;
+
+    await store.addDocuments(texts, {});
     console.log("✅ Langchain ingestion complete");
   } catch (error) {
     console.error("Error during Langchain ingestion:", error);

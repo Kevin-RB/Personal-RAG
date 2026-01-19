@@ -17,9 +17,10 @@ export function getDatabaseUrl() {
 
 export const db = drizzle(getDatabaseUrl());
 
-export const langchainVectorStore = await PGVectorStore.initialize(
-  embedding_langchain,
-  {
+export const langchainVectorStore = initLangchainVectorStore();
+
+async function initLangchainVectorStore() {
+  return await PGVectorStore.initialize(embedding_langchain, {
     postgresConnectionOptions: {
       type: "postgres",
       host: "127.0.0.1",
@@ -36,5 +37,5 @@ export const langchainVectorStore = await PGVectorStore.initialize(
       metadataColumnName: "langchain_metadata",
     },
     distanceStrategy: "cosine" as DistanceStrategy,
-  }
-);
+  });
+}

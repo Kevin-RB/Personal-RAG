@@ -19,13 +19,14 @@ export const embeddings = pgTable(
       { onDelete: "cascade" }
     ),
     content: text("content").notNull(),
-    embedding: vector("embedding", { dimensions: 768 }).notNull(),
+    embedding: vector("embedding", { dimensions: 2000 }).notNull(),
     pageNumber: integer("page_number").notNull(),
   },
   (table) => [
-    index("embeddingIndex").using(
-      "hnsw",
-      table.embedding.op("vector_cosine_ops")
-    ),
+    index("embeddingIndex")
+      .using("hnsw", table.embedding.op("vector_cosine_ops"))
+      .with({
+        list: 100,
+      }),
   ]
 );

@@ -100,7 +100,8 @@ export const RAG_handmade = async (userQuery: string) => {
 const RAG_langchain = async (userQuery: string) => {
   try {
     // 1. Basic retriever (your improved version)
-    const baseRetriever = langchainVectorStore.asRetriever({
+    const store = await langchainVectorStore;
+    const baseRetriever = store.asRetriever({
       k: 5, // Get more candidates
       searchType: "similarity",
     });
