@@ -2,20 +2,24 @@ import { migrate } from "drizzle-orm/node-postgres/migrator";
 import { db } from "./db";
 
 const runMigrate = async () => {
-  console.log("🚀 Starting migration script");
-  process.loadEnvFile(".env");
+  try {
+    console.log("🚀 Starting migration script");
 
-  console.log("⏳ Running migrations...");
+    console.log("⏳ Running migrations...");
 
-  const start = Date.now();
+    const start = Date.now();
 
-  await migrate(db, { migrationsFolder: "lib/db/migrations" });
+    await migrate(db, { migrationsFolder: "lib/db/migrations" });
 
-  const end = Date.now();
+    const end = Date.now();
 
-  console.log("✅ Migrations completed in", end - start, "ms");
+    console.log("✅ Migrations completed in", end - start, "ms");
 
-  process.exit(0);
+    process.exit(0);
+  } catch (error) {
+    console.error("❌ Error during migration:", error);
+    process.exit(1);
+  }
 };
 
 runMigrate().catch((err) => {

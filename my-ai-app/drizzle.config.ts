@@ -6,6 +6,6 @@ export default defineConfig({
   schema: "./lib/db/schema/*",
   dialect: "postgresql",
   dbCredentials: {
-    url: getDatabaseUrl(),
+    url: `${getDatabaseUrl()}?sslmode=disable`,
   },
 });

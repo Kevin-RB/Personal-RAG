@@ -1,12 +1,10 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, timestamp, varchar } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { createSelectSchema } from "drizzle-zod";
 import type { z } from "zod";
 
 export const resources = pgTable("resources", {
-  id: varchar("id", { length: 191 })
-    .primaryKey()
-    .$defaultFn(() => crypto.randomUUID()),
+  id: uuid("id").primaryKey().defaultRandom(),
   content: text("content").notNull(),
   title: text("title"),
   author: text("author"),

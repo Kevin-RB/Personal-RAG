@@ -1,5 +1,5 @@
 {
-  "id": "46879a82-bc7e-4fd3-99a7-6d37996dbdd7",
+  "id": "411d101f-bf1d-4acb-8568-6ccec5e6b1fe",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -10,13 +10,14 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "varchar(191)",
+          "type": "uuid",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "default": "gen_random_uuid()"
         },
         "resource_id": {
           "name": "resource_id",
-          "type": "varchar(191)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
@@ -28,7 +29,13 @@
         },
         "embedding": {
           "name": "embedding",
-          "type": "vector(768)",
+          "type": "vector(2000)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "page_number": {
+          "name": "page_number",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true
         }
@@ -56,8 +63,12 @@
           "name": "embeddings_resource_id_resources_id_fk",
           "tableFrom": "embeddings",
           "tableTo": "resources",
-          "columnsFrom": ["resource_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "resource_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -74,15 +85,40 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "varchar(191)",
+          "type": "uuid",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "default": "gen_random_uuid()"
         },
         "content": {
           "name": "content",
           "type": "text",
           "primaryKey": false,
           "notNull": true
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "author": {
+          "name": "author",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "subject": {
+          "name": "subject",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "keywords": {
+          "name": "keywords",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         },
         "created_at": {
           "name": "created_at",

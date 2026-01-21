@@ -1,15 +1,18 @@
-CREATE EXTENSION IF NOT EXISTS vector;
-
 CREATE TABLE "embeddings" (
-	"id" varchar(191) PRIMARY KEY NOT NULL,
-	"resource_id" varchar(191),
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"resource_id" uuid,
 	"content" text NOT NULL,
-	"embedding" vector(768) NOT NULL
+	"embedding" vector(2000) NOT NULL,
+	"page_number" integer NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "resources" (
-	"id" varchar(191) PRIMARY KEY NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"content" text NOT NULL,
+	"title" text,
+	"author" text,
+	"subject" text,
+	"keywords" text,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
