@@ -15,7 +15,9 @@
     "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate",
     "ingest": "tsx --env-file=.env lib/ai/ingestion/manual-ingest.ts",
-    "prepare": "husky"
+    "prepare": "husky",
+    "lint": "ultracite check",
+    "lint:fix": "ultracite fix"
   },
   "keywords": [],
   "author": "",

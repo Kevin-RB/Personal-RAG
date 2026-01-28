@@ -1,14 +1,14 @@
 import { Experimental_Agent as Agent, stepCountIs } from "ai";
 import { evalite } from "evalite";
 import { answerRelevancy, contextRecall, faithfulness } from "evalite/scorers";
-import { laxSytemPrompt } from "../lib/ai/agents/system-propmts";
-import { embeddingModelList, modelList } from "../lib/ai/models";
-import { getDateTool } from "../lib/ai/tools/get-date";
+import { testingModels } from "@/evals/evalite-models";
+import { laxSytemPrompt } from "@/lib/ai/agents/system-propmts";
+import { embeddingModelList, modelList } from "@/lib/ai/models";
+import { getDateTool } from "@/lib/ai/tools/get-date";
 import {
   getInformationTool,
   getInformationTool_langchain,
-} from "../lib/ai/tools/get-information";
-import { testingModels } from "./evalite-models";
+} from "@/lib/ai/tools/get-information";
 
 evalite.each([
   {

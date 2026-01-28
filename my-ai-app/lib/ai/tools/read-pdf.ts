@@ -1,5 +1,5 @@
 import type { FilePart } from "ai";
-// import { ingestFile } from "../ingestion/ingest";
+// import { ingestFile } from "@/lib/ai/ingestion/ingest";
 
 export const processPDF = (data: FilePart) => {
   try {

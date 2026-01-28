@@ -6,7 +6,7 @@ import {
   uuid,
   vector,
 } from "drizzle-orm/pg-core";
-import { resources } from "./resources";
+import { resources } from "@/lib/db/schema/resources";
 
 export const embeddings = pgTable(
   "embeddings",

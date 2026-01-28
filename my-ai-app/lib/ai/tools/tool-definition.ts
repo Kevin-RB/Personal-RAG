@@ -1,6 +1,6 @@
 import type { InferUITools, ToolSet, UIDataTypes, UIMessage } from "ai";
-import { getDateTool } from "./get-date";
-import { getInformationTool } from "./get-information";
+import { getDateTool } from "@/lib/ai/tools/get-date";
+import { getInformationTool } from "@/lib/ai/tools/get-information";
 
 export const ChatTools = {
   getInformationTool,

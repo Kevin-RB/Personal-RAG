@@ -1,6 +1,6 @@
 import { generateObject } from "ai";
 import z from "zod";
-import { modelList } from "../models";
+import { modelList } from "@/lib/ai/models";
 
 export const generateVariants = async (question: string) => {
   const { object } = await generateObject({

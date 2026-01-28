@@ -1,9 +1,9 @@
 import { Experimental_Agent as Agent, stepCountIs } from "ai";
 import { evalite } from "evalite";
 import { levenshtein } from "evalite/scorers";
-import { laxSytemPrompt } from "../lib/ai/agents/system-propmts";
-import { getDateTool } from "../lib/ai/tools/get-date";
-import { testingModels } from "./evalite-models";
+import { testingModels } from "@/evals/evalite-models";
+import { laxSytemPrompt } from "@/lib/ai/agents/system-propmts";
+import { getDateTool } from "@/lib/ai/tools/get-date";
 
 evalite("Datetime Understanding Eval", {
   data: () => [

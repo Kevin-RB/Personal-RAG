@@ -1,5 +1,5 @@
 import { defineConfig } from "drizzle-kit";
-import { getDatabaseUrl } from "./lib/db/db";
+import { getDatabaseUrl } from "@/lib/db/db";
 
 export default defineConfig({
   out: "./lib/db/migrations",
