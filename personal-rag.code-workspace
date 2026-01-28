@@ -1,12 +1,12 @@
 {
     "folders": [
         {
-            "name": "My AI App", // Optional, helpful name
-            "path": "my-ai-app"  // Relative path to the first project
+            "name": "My AI App",
+            "path": "my-ai-app"
         },
         {
-            "name": "Test AI SDK UI", // Optional, helpful name
-            "path": "test-ai-sdk-ui" // Relative path to the second project
+            "name": "Test AI SDK UI",
+            "path": "test-ai-sdk-ui"
         }
     ],
     "settings": {}

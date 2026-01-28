@@ -3,5 +3,17 @@
   "extends": ["ultracite/core", "ultracite/react"],
   "files": {
     "includes": ["!src/components/ai-elements", "!src/components/ui"]
+  },
+  "linter": {
+    "rules": {
+      "style": {
+        "useConsistentTypeDefinitions": {
+          "level": "warn",
+          "options": {
+            "style": "type"
+          }
+        }
+      }
+    }
   }
 }
