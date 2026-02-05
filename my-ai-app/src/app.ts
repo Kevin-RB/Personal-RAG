@@ -1,4 +1,4 @@
-import { convertToModelMessages, type UIMessage } from "ai";
+import { pipeAgentUIStreamToResponse } from "ai";
 import cors from "cors";
 import express, { type Request, type Response } from "express";
 import z from "zod/v3";
@@ -10,24 +10,27 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: "5mb" }));
 
-app.post("/api/chat", async (req: Request, res: Response) => {
+app.post("/api/chat", (req: Request, res: Response) => {
   const { messages } = req.body;
 
   if (!(messages && Array.isArray(messages))) {
     return res.status(400).json({ error: "Messages array is required" });
   }
-
-  const modelMessages = await convertToModelMessages(
-    messages as UIMessage[],
-    {}
-  );
-
   try {
-    const result = await ragAgent.stream({
-      messages: modelMessages,
+    return pipeAgentUIStreamToResponse({
+      response: res,
+      agent: ragAgent,
+      uiMessages: messages,
+      sendReasoning: true,
+      sendSources: true,
+      onStepFinish: (step) => {
+        console.log(
+          "Step finished:",
+          step.toolCalls.length,
+          "tool calls made so far"
+        );
+      },
     });
-
-    result.pipeUIMessageStreamToResponse(res);
   } catch (error) {
     console.error("Error in /api/chat:", error);
 

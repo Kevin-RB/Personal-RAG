@@ -1,6 +1,5 @@
 import { generateText, Output } from "ai";
 import {
-  type Document,
   type RetrievalEvaluation,
   RetrievalEvaluationSchema,
 } from "@/lib/ai/types/rag";
@@ -8,7 +7,7 @@ import { lmstudioModel } from "@/lib/ai/utils/provider-config";
 
 export type EvaluateRetrievalOptions = {
   query: string;
-  documents: Document[];
+  documents: Array<{ content: string; metadata: Record<string, unknown> }>;
   iterationCount: number;
 };
 
@@ -17,9 +16,15 @@ export async function evaluateRetrieval({
   documents,
   iterationCount,
 }: EvaluateRetrievalOptions): Promise<RetrievalEvaluation> {
-  const documentsText = documents
-    .map((doc, i) => `Document ${i + 1}:\n${doc.content}`)
-    .join("\n\n---\n\n");
+  const formattedDocuments = documents
+    .map((doc, index) => {
+      const source =
+        typeof doc.metadata.source === "string"
+          ? doc.metadata.source
+          : "unknown";
+      return `[${index + 1}] Source: ${source}\n${doc.content}`;
+    })
+    .join("\n\n");
 
   const { output } = await generateText({
     model: lmstudioModel("google/gemma-2-9b"),
@@ -30,7 +35,8 @@ export async function evaluateRetrieval({
     prompt: `Query: "${query}"
 
 Retrieved Documents (${documents.length} documents):
-${documentsText}
+
+${formattedDocuments}
 
 Evaluate these documents on:
 1. Relevance (1-10): How relevant are they to the query?

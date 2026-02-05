@@ -1,7 +1,6 @@
 import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport } from "ai";
+import { DefaultChatTransport, type ToolUIPart } from "ai";
 import { MessageSquare, SendIcon } from "lucide-react";
-import type { RetrievalToolUIPart } from "@/ai/tool-mappings/retrieval";
 import {
   Conversation,
   ConversationContent,
@@ -70,9 +69,8 @@ function App() {
                           </Response>
                         );
                       case "tool-getInformationTool": {
-                        const toolPart = message.parts[
-                          i
-                        ] as RetrievalToolUIPart;
+                        const toolPart = message.parts[i] as ToolUIPart;
+
                         return (
                           <Tool key={`${message.id}-${i}`}>
                             <ToolHeader

@@ -38,38 +38,6 @@ export const RetrievalEvaluationSchema = z.object({
 
 export type RetrievalEvaluation = z.infer<typeof RetrievalEvaluationSchema>;
 
-export type RAGTelemetry = {
-  queryId: string;
-  originalQuery: string;
-  startTime: Date;
-  endTime?: Date;
-  iterations: Array<{
-    iterationNumber: number;
-    query: string;
-    evaluation: RetrievalEvaluation;
-    documentsRetrieved: number;
-    timestamp: Date;
-  }>;
-  queryExpansions: Array<{
-    fromQuery: string;
-    toQuery: string;
-    reason: string;
-    timestamp: Date;
-  }>;
-  finalConfidence: number;
-  totalTokens?: {
-    input: number;
-    output: number;
-  };
-  error?: string;
-};
-
-export type Document = {
-  content: string;
-  metadata?: Record<string, unknown>;
-  score?: number;
-};
-
 export const ExpandedQueriesSchema = z3.object({
   variations: z3
     .array(
