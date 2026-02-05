@@ -5,10 +5,7 @@ import { testingModels } from "@/evals/evalite-models";
 import { laxSytemPrompt } from "@/lib/ai/agents/system-propmts";
 import { embeddingModelList, modelList } from "@/lib/ai/models";
 import { getDateTool } from "@/lib/ai/tools/get-date";
-import {
-  getInformationTool,
-  getInformationTool_langchain,
-} from "@/lib/ai/tools/get-information";
+import { getInformationTool } from "@/lib/ai/tools/get-information";
 
 evalite.each([
   {
@@ -16,9 +13,9 @@ evalite.each([
     input: { tools: { getDateTool, getInformationTool } },
   },
   {
-    name: "RAG_langchain",
+    name: "RAG_enhanced",
     input: {
-      tools: { getDateTool, getInformationTool: getInformationTool_langchain },
+      tools: { getDateTool, getInformationTool },
     },
   },
 ])("RAG Test", {

@@ -1,6 +1,7 @@
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { MessageSquare, SendIcon } from "lucide-react";
+import type { RetrievalToolUIPart } from "@/ai/tool-mappings/retrieval";
 import {
   Conversation,
   ConversationContent,
@@ -10,19 +11,20 @@ import {
 import { Message, MessageContent } from "@/components/ai-elements/message";
 import {
   PromptInput,
-  PromptInputActionAddAttachments,
-  PromptInputActionMenu,
-  PromptInputActionMenuContent,
-  PromptInputActionMenuTrigger,
   PromptInputBody,
   PromptInputFooter,
   type PromptInputMessage,
   PromptInputSubmit,
   PromptInputTextarea,
-  PromptInputTools,
 } from "@/components/ai-elements/prompt-input";
 import { Response } from "@/components/ai-elements/response";
 import { Shimmer } from "@/components/ai-elements/shimmer";
+import {
+  Tool,
+  ToolContent,
+  ToolHeader,
+  ToolInput,
+} from "@/components/ai-elements/tool";
 import MessageAttachments from "@/components/message-attachment";
 
 function App() {
@@ -40,8 +42,9 @@ function App() {
     }
 
     sendMessage({
-      text: message.text || "Sent with attachments",
+      text: message.text || "",
     });
+    return;
   };
 
   return (
@@ -66,16 +69,22 @@ function App() {
                             {part.text}
                           </Response>
                         );
-                      case "file":
+                      case "tool-getInformationTool": {
+                        const toolPart = message.parts[
+                          i
+                        ] as RetrievalToolUIPart;
                         return (
-                          <iframe
-                            height={600}
-                            key={`${message.id}-pdf-${i}`}
-                            src={part.url}
-                            title={`pdf-${i}`}
-                            width={500}
-                          />
+                          <Tool key={`${message.id}-${i}`}>
+                            <ToolHeader
+                              state={toolPart.state}
+                              type="tool-Knowledge Retrieval"
+                            />
+                            <ToolContent>
+                              <ToolInput input={part.input} />
+                            </ToolContent>
+                          </Tool>
                         );
+                      }
                       default:
                         return null;
                     }
@@ -96,15 +105,6 @@ function App() {
         </PromptInputBody>
 
         <PromptInputFooter>
-          <PromptInputTools>
-            <PromptInputActionMenu>
-              <PromptInputActionMenuTrigger />
-              <PromptInputActionMenuContent>
-                <PromptInputActionAddAttachments />
-              </PromptInputActionMenuContent>
-            </PromptInputActionMenu>
-          </PromptInputTools>
-
           <PromptInputSubmit
             className="h-8 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
             status={status}

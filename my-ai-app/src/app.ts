@@ -1,7 +1,9 @@
-import { convertToModelMessages } from "ai";
+import { convertToModelMessages, type UIMessage } from "ai";
 import cors from "cors";
 import express, { type Request, type Response } from "express";
+import z from "zod/v3";
 import { ragAgent } from "@/lib/ai/agents/rag-agent";
+import { LmstudioClientModel } from "@/lib/ai/utils/provider-config";
 
 const app = express();
 
@@ -15,9 +17,14 @@ app.post("/api/chat", async (req: Request, res: Response) => {
     return res.status(400).json({ error: "Messages array is required" });
   }
 
+  const modelMessages = await convertToModelMessages(
+    messages as UIMessage[],
+    {}
+  );
+
   try {
     const result = await ragAgent.stream({
-      messages: await convertToModelMessages(messages),
+      messages: modelMessages,
     });
 
     result.pipeUIMessageStreamToResponse(res);
@@ -28,6 +35,32 @@ app.post("/api/chat", async (req: Request, res: Response) => {
     if (!res.headersSent) {
       res.status(500).json({ error: "Internal Server Error" });
     }
+  }
+});
+
+app.get("/api/test", async (req: Request, res: Response) => {
+  console.log("Received request to /api/test", req.query);
+  try {
+    const responseSchema = z.object({
+      variations: z.array(
+        z.object({
+          query: z.string(),
+        })
+      ),
+    });
+
+    const model = await LmstudioClientModel("google/gemma-2-9b");
+
+    const result = await model.respond(
+      "Generate variations of the query: A lily is.",
+      { structured: responseSchema }
+    );
+    const structuredResponse = result.parsed;
+    console.log("Structured response:", structuredResponse);
+    res.json(structuredResponse);
+  } catch (error) {
+    console.error("Error in /api/test:", error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 });
 

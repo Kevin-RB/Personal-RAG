@@ -2,6 +2,8 @@ import { drizzle } from "drizzle-orm/node-postgres";
 
 export function getDatabaseUrl() {
   const databaseUrl = process.env.DATABASE_URL;
+  console.log("Retrieved DATABASE_URL from environment variables.");
+  console.log("DATABASE_URL value:", databaseUrl);
 
   if (!databaseUrl) {
     throw new Error("DATABASE_URL is not defined");
@@ -11,4 +13,4 @@ export function getDatabaseUrl() {
   return databaseUrl;
 }
 
-export const db = drizzle(getDatabaseUrl());
+export const db = drizzle(`${getDatabaseUrl()}?sslmode=disable`);
