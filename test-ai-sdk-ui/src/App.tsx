@@ -23,6 +23,7 @@ import {
   ToolContent,
   ToolHeader,
   ToolInput,
+  ToolOutput,
 } from "@/components/ai-elements/tool";
 import MessageAttachments from "@/components/message-attachment";
 
@@ -70,7 +71,6 @@ function App() {
                         );
                       case "tool-getInformationTool": {
                         const toolPart = message.parts[i] as ToolUIPart;
-
                         return (
                           <Tool key={`${message.id}-${i}`}>
                             <ToolHeader
@@ -79,6 +79,10 @@ function App() {
                             />
                             <ToolContent>
                               <ToolInput input={part.input} />
+                              <ToolOutput
+                                errorText={part.errorText}
+                                output={part.output}
+                              />
                             </ToolContent>
                           </Tool>
                         );

@@ -34,6 +34,11 @@ export const RetrievalEvaluationSchema = z.object({
   reasoning: z
     .string()
     .describe("Detailed reasoning for the evaluation scores"),
+  mostRelevantChunkIds: z
+    .array(z.uuidv4())
+    .describe(
+      "List of the most relevant documents that contributed to the evaluation"
+    ),
 });
 
 export type RetrievalEvaluation = z.infer<typeof RetrievalEvaluationSchema>;
@@ -53,8 +58,8 @@ export const ExpandedQueriesSchema = z3.object({
           .describe("Why this variation might help find better results"),
       })
     )
-    .min(1)
-    .max(5)
+    .min(2)
+    .max(3)
     .describe("Multiple query variations to improve retrieval"),
 });
 

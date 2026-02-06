@@ -20,7 +20,7 @@ export const reciprocalRankFusion = (
     const rank = i + 1;
     const score = 1 / (RRF_K + rank);
 
-    const key = doc.pageContent;
+    const key = doc.id || doc.pageContent; // Use ID if available, otherwise fallback to content as key
     const existing = rrfScores.get(key);
 
     if (existing) {
@@ -35,7 +35,7 @@ export const reciprocalRankFusion = (
     const rank = i + 1;
     const score = 1 / (RRF_K + rank);
 
-    const key = doc.pageContent;
+    const key = doc.id || doc.pageContent; // Use ID if available, otherwise fallback to content as key
     const existing = rrfScores.get(key);
 
     if (existing) {

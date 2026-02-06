@@ -1,9 +1,8 @@
 import { pipeAgentUIStreamToResponse } from "ai";
 import cors from "cors";
 import express, { type Request, type Response } from "express";
-import z from "zod/v3";
 import { ragAgent } from "@/lib/ai/agents/rag-agent";
-import { LmstudioClientModel } from "@/lib/ai/utils/provider-config";
+import { vectorStorePGVector } from "@/lib/ai/utils/vector-store";
 
 const app = express();
 
@@ -44,23 +43,24 @@ app.post("/api/chat", (req: Request, res: Response) => {
 app.get("/api/test", async (req: Request, res: Response) => {
   console.log("Received request to /api/test", req.query);
   try {
-    const responseSchema = z.object({
-      variations: z.array(
-        z.object({
-          query: z.string(),
+    const iterationQueries = [
+      "Who is Camila Dossman",
+      "What is Camila Dossman's background and experience",
+    ];
+    const result = await Promise.all(
+      iterationQueries.map((query) =>
+        vectorStorePGVector.similaritySearch(query, 5, {
+          source: {
+            in: [
+              "C:\\Users\\KRB35\\personal-projects\\ai-sdk-playground\\rag-document-repository\\Maria Camila Dossman CV English AUS copy.pdf",
+              "micos lindos",
+            ],
+          },
         })
-      ),
-    });
-
-    const model = await LmstudioClientModel("google/gemma-2-9b");
-
-    const result = await model.respond(
-      "Generate variations of the query: A lily is.",
-      { structured: responseSchema }
+      )
     );
-    const structuredResponse = result.parsed;
-    console.log("Structured response:", structuredResponse);
-    res.json(structuredResponse);
+
+    res.json(result);
   } catch (error) {
     console.error("Error in /api/test:", error);
     res.status(500).json({ error: "Internal Server Error" });
