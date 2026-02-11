@@ -1,4 +1,5 @@
 import { devToolsMiddleware } from "@ai-sdk/devtools";
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { LMStudioClient } from "@lmstudio/sdk";
 import { wrapLanguageModel } from "ai";
@@ -24,3 +25,8 @@ export function LmstudioClientModel(model: ModelId) {
   const client = new LMStudioClient();
   return client.llm.model(model);
 }
+
+export const googleProvider = createGoogleGenerativeAI({
+  // custom settings
+  apiKey: process.env.GOOGLE_API_KEY || "",
+});
