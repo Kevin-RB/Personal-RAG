@@ -1,8 +1,11 @@
+import type { Document } from "@langchain/core/documents";
 import { type Tool, tool } from "ai";
 import z from "zod";
 import { sumarizingAgent } from "@/lib/ai/agents/summarizinng-agent";
-import { retrieveInformation } from "@/lib/ai/retrieval";
+import { runRetrievalPipeline } from "@/lib/ai/retrieval/pipeline";
 import { getEvaluationForPrompt } from "@/lib/ai/retrieval/state";
+import type { ToolProgressOutput } from "@/lib/ai/retrieval/types";
+import type { RetrievalEvaluation } from "@/lib/ai/types/rag";
 
 const retrieveSchema = z.object({
   query: z
@@ -17,25 +20,62 @@ export const getInformationTool = tool({
   description:
     "Retrieve information related to a query using self-reflecting RAG with multi-query expansion, hybrid search, and iterative evaluation. Automatically expands queries and retries if initial results are insufficient.",
   inputSchema: retrieveSchema,
-  async execute({ query }) {
-    const result = await retrieveInformation({
-      query,
-      maxIterations: 3,
-    });
+  async *execute({ query }) {
+    const pipeline = runRetrievalPipeline({ query, maxIterations: 3 });
+    let documents: Document[] = [];
+    let evaluation: Partial<RetrievalEvaluation> | undefined;
+    let attempts = 0;
+
+    for await (const progress of pipeline) {
+      if (progress.step === "result") {
+        // Capture the final result data
+        documents = progress.documents;
+        evaluation = progress.evaluation;
+        attempts = progress.totalAttempts;
+      } else {
+        // Stream simplified progress updates to UI
+        let iteration: number | undefined;
+
+        if ("attempt" in progress) {
+          iteration = progress.attempt;
+        } else if ("totalAttempts" in progress) {
+          iteration = progress.totalAttempts;
+        }
+
+        const progressOutput: ToolProgressOutput = {
+          step: progress.step,
+          message: progress.message,
+          iteration,
+        };
+
+        yield progressOutput;
+      }
+    }
+
+    if (documents.length === 0) {
+      throw new Error("Pipeline completed without retrieving any documents");
+    }
 
     const evaluationToPrompt = getEvaluationForPrompt({
-      retrievalAttempts: result.attempts,
+      retrievalAttempts: attempts,
       triedQueries: [],
-      evaluation: result.evaluation,
-      foundDocuments: new Set(result.documents),
+      evaluation: evaluation ?? {},
+      foundDocuments: new Set(documents),
       mostRelevantDocuments: new Set(),
       originalQuery: query,
     });
 
+    const generatingSummaryOutput: ToolProgressOutput = {
+      step: "generating-summary",
+      message: `Generating summary from ${documents.length} retrieved documents...`,
+      iteration: attempts,
+    };
+    yield generatingSummaryOutput;
+
     const summary = await sumarizingAgent.generate({
       prompt: `
         DOCUMENTS:
-        ${result.documents
+        ${documents
           .map((doc) => `Source: ${doc.metadata.source}\n${doc.pageContent}`)
           .join("\n\n---\n\n")}
         =================
@@ -44,6 +84,11 @@ export const getInformationTool = tool({
       `,
     });
 
-    return summary.text;
+    const completeOutput: ToolProgressOutput = {
+      step: "complete",
+      message: summary.text,
+      iteration: attempts,
+    };
+    yield completeOutput;
   },
 }) satisfies Tool;

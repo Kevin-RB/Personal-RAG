@@ -1,5 +1,5 @@
 import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport, type ToolUIPart } from "ai";
+import { DefaultChatTransport } from "ai";
 import { MessageSquare, SendIcon } from "lucide-react";
 import {
   Conversation,
@@ -26,9 +26,10 @@ import {
   ToolOutput,
 } from "@/components/ai-elements/tool";
 import MessageAttachments from "@/components/message-attachment";
+import type { RagAgentUIMessage } from "@/lib/message-types";
 
 function App() {
-  const { sendMessage, messages, status } = useChat({
+  const { sendMessage, messages, status } = useChat<RagAgentUIMessage>({
     transport: new DefaultChatTransport({
       api: "http://localhost:3000/api/chat",
     }),
@@ -70,21 +71,38 @@ function App() {
                           </Response>
                         );
                       case "tool-getInformationTool": {
-                        const toolPart = message.parts[i] as ToolUIPart;
+                        const hasOutput = part.state === "output-available";
+                        const isStreaming =
+                          hasOutput && part.preliminary === true;
+
+                        if (!hasOutput) {
+                          return null;
+                        }
+
                         return (
-                          <Tool key={`${message.id}-${i}`}>
-                            <ToolHeader
-                              state={toolPart.state}
-                              type="tool-Knowledge Retrieval"
-                            />
-                            <ToolContent>
-                              <ToolInput input={part.input} />
-                              <ToolOutput
-                                errorText={part.errorText}
-                                output={part.output}
+                          <>
+                            {isStreaming && part.output.step !== "complete" && (
+                              <pre>
+                                <Shimmer duration={6}>
+                                  {part.output.message}
+                                </Shimmer>
+                              </pre>
+                            )}
+
+                            <Tool key={`${message.id}-${i}`}>
+                              <ToolHeader
+                                state={part.state}
+                                type="tool-Knowledge Retrieval"
                               />
-                            </ToolContent>
-                          </Tool>
+                              <ToolContent>
+                                <ToolInput input={part.input} />
+                                <ToolOutput
+                                  errorText={part.errorText}
+                                  output={part.output}
+                                />
+                              </ToolContent>
+                            </Tool>
+                          </>
                         );
                       }
                       default:

@@ -1,4 +1,4 @@
-import { ToolLoopAgent } from "ai";
+import { type InferAgentUIMessage, ToolLoopAgent } from "ai";
 import { ChatTools } from "@/lib/ai/tools/tool-definition";
 import { lmstudioModel } from "@/lib/ai/utils/provider-config";
 
@@ -38,3 +38,5 @@ You have access to the \\"Get Information\\" tool, which uses state-of-the-art r
 ,`,
   tools: ChatTools,
 });
+
+export type RagAgentUIMessage = InferAgentUIMessage<typeof ragAgent>;

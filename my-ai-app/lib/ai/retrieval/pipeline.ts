@@ -19,7 +19,7 @@ import {
 import type {
   RetrievalIteration,
   RetrievalOptions,
-  RetrievalResult,
+  RetrievalProgress,
   RetrievalState,
 } from "./types";
 
@@ -117,17 +117,46 @@ function updateStateFromIteration(
   return updatedState;
 }
 
-export async function runRetrievalPipeline(
+export async function* runRetrievalPipeline(
   options: RetrievalOptions
-): Promise<RetrievalResult> {
+): AsyncIterable<RetrievalProgress> {
   const { query, maxIterations = 3 } = options;
 
   let state = createRetrievalState(query);
 
   while (shouldContinueIteration(state, maxIterations)) {
+    const currentAttempt = state.retrievalAttempts + 1;
+
+    yield {
+      step: "iteration-start",
+      attempt: currentAttempt,
+      maxIterations,
+      message: `Starting retrieval attempt ${currentAttempt}/${maxIterations}`,
+    };
+
     const isFirstIteration = state.retrievalAttempts === 0;
     const iterationQueries = await getIterationQueries(state, isFirstIteration);
+
+    yield {
+      step: "queries-ready",
+      attempt: currentAttempt,
+      queries: iterationQueries,
+      message: `Searching with ${iterationQueries.length} query variation(s)`,
+    };
+
     const iteration = await executeIteration(state, iterationQueries);
+
+    yield {
+      step: "iteration-complete",
+      attempt: currentAttempt,
+      documentsFound: iteration.fusedResults.length,
+      confidence: iteration.evaluation.confidence,
+      isSufficient: iteration.evaluation.isSufficient,
+      message: iteration.evaluation.isSufficient
+        ? `Found sufficient information (confidence: ${iteration.evaluation.confidence})`
+        : `Insufficient results (confidence: ${iteration.evaluation.confidence}), will retry`,
+    };
+
     state = updateStateFromIteration(state, iteration);
   }
 
@@ -139,9 +168,18 @@ export async function runRetrievalPipeline(
   console.log("================ Final Found Documents =================");
   console.log(state.foundDocuments.values());
 
-  return {
+  yield {
+    step: "complete",
+    totalAttempts: state.retrievalAttempts,
+    totalDocuments: state.foundDocuments.size,
+    message: `Retrieval complete after ${state.retrievalAttempts} attempt(s)`,
+  };
+
+  yield {
+    step: "result",
     documents: Array.from(state.foundDocuments),
     evaluation: state.evaluation,
-    attempts: state.retrievalAttempts,
+    totalAttempts: state.retrievalAttempts,
+    message: "Final retrieval result",
   };
 }
