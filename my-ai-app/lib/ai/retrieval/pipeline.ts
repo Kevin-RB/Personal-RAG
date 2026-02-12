@@ -1,5 +1,6 @@
 import { expandQuery } from "@/lib/ai/evaluation/query-expander";
 import { evaluateRetrieval } from "@/lib/ai/evaluation/retrieval-evaluator";
+import { getPluralQueryVariationCategory } from "@/lib/ai/utils/plural-rules";
 import {
   addFoundDocuments,
   addMostRelevantDocuments,
@@ -137,11 +138,15 @@ export async function* runRetrievalPipeline(
     const isFirstIteration = state.retrievalAttempts === 0;
     const iterationQueries = await getIterationQueries(state, isFirstIteration);
 
+    const pluralizedVariation = getPluralQueryVariationCategory(
+      iterationQueries.length,
+      "en-AU"
+    );
     yield {
       step: "queries-ready",
       attempt: currentAttempt,
       queries: iterationQueries,
-      message: `Searching with ${iterationQueries.length} query variation(s)`,
+      message: `Searching with ${iterationQueries.length} ${pluralizedVariation}`,
     };
 
     const iteration = await executeIteration(state, iterationQueries);

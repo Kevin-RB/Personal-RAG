@@ -83,7 +83,7 @@ function App() {
                           <>
                             {isStreaming && part.output.step !== "complete" && (
                               <pre>
-                                <Shimmer duration={6}>
+                                <Shimmer duration={2}>
                                   {part.output.message}
                                 </Shimmer>
                               </pre>
